@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>PT Tracker</title>
 
     <!-- PWA Meta Tags -->
@@ -30,6 +30,10 @@
             background: #f5f5f5;
             min-height: 100vh;
             padding: 1rem;
+            padding-top: calc(1rem + env(safe-area-inset-top));
+            padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+            padding-left: calc(1rem + env(safe-area-inset-left));
+            padding-right: calc(1rem + env(safe-area-inset-right));
             color: #111;
         }
 
@@ -271,6 +275,109 @@
             opacity: 0.4;
             cursor: not-allowed;
         }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2rem 0 1rem;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .history-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e5e5e5;
+        }
+
+        .history-date {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #111;
+        }
+
+        .history-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .history-entry:last-child {
+            border-bottom: none;
+        }
+
+        .history-name {
+            font-size: 0.875rem;
+            color: #111;
+        }
+
+        .history-time {
+            font-size: 0.75rem;
+            color: #999;
+        }
+
+        .history-count {
+            font-size: 0.75rem;
+            color: #22c55e;
+            background: #f0fdf4;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .clear-history {
+            font-size: 0.75rem;
+            color: #999;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .history-delete {
+            font-size: 0.75rem;
+            color: #ef4444;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.25rem;
+            margin-left: 0.5rem;
+            display: none;
+        }
+
+        .history-delete:active {
+            color: #dc2626;
+        }
+
+        .editing .history-delete {
+            display: inline;
+        }
+
+        .editing .clear-history {
+            color: #ef4444;
+        }
+
+        .history-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .edit-history {
+            font-size: 0.75rem;
+            color: #999;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -287,6 +394,8 @@
             <button class="add-exercise" onclick="showModal()">
                 + Add Exercise
             </button>
+
+            <div id="history-section"></div>
         </div>
     </div>
 
@@ -320,11 +429,210 @@
 
     <script>
         let exercises = JSON.parse(localStorage.getItem('ptExercises') || '[]');
+        let history = JSON.parse(localStorage.getItem('ptHistory') || '[]');
         let timers = {};
         let holdTimers = {};
+        let editingHistory = false;
+        let audioContext = null;
+        let wakeLock = null;
+
+        // Register service worker for offline support
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then((registration) => {
+                    console.log('Service Worker registered:', registration.scope);
+                })
+                .catch((error) => {
+                    console.log('Service Worker registration failed:', error);
+                });
+        }
+
+        // Wake Lock API - prevent screen from sleeping
+        async function requestWakeLock() {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    wakeLock.addEventListener('release', () => {
+                        console.log('Wake Lock released');
+                    });
+                    console.log('Wake Lock acquired');
+                } catch (err) {
+                    console.log('Wake Lock error:', err.message);
+                }
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock !== null) {
+                wakeLock.release();
+                wakeLock = null;
+            }
+        }
+
+        // Re-acquire wake lock when page becomes visible again
+        document.addEventListener('visibilitychange', async () => {
+            if (document.visibilityState === 'visible') {
+                // Check if any timers are running
+                const hasActiveTimers = Object.keys(timers).length > 0 || Object.keys(holdTimers).length > 0;
+                if (hasActiveTimers) {
+                    await requestWakeLock();
+                }
+            }
+        });
+
+        function getAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            return audioContext;
+        }
+
+        function playChime() {
+            try {
+                const ctx = getAudioContext();
+                const oscillator = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(ctx.destination);
+
+                oscillator.frequency.value = 880; // A5 note
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+
+                oscillator.start(ctx.currentTime);
+                oscillator.stop(ctx.currentTime + 0.3);
+            } catch (e) {
+                console.log('Audio not available');
+            }
+        }
+
+        function playBell() {
+            try {
+                const ctx = getAudioContext();
+
+                // Play two tones for a bell effect
+                [523, 659, 784].forEach((freq, i) => {
+                    const oscillator = ctx.createOscillator();
+                    const gainNode = ctx.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(ctx.destination);
+
+                    oscillator.frequency.value = freq;
+                    oscillator.type = 'sine';
+
+                    const startTime = ctx.currentTime + (i * 0.1);
+                    gainNode.gain.setValueAtTime(0.3, startTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.5);
+
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + 0.5);
+                });
+            } catch (e) {
+                console.log('Audio not available');
+            }
+        }
 
         function saveData() {
             localStorage.setItem('ptExercises', JSON.stringify(exercises));
+        }
+
+        function saveHistory() {
+            localStorage.setItem('ptHistory', JSON.stringify(history));
+        }
+
+        function logCompletion(exerciseName) {
+            history.unshift({
+                name: exerciseName,
+                timestamp: Date.now()
+            });
+            // Keep only last 100 entries
+            if (history.length > 100) {
+                history = history.slice(0, 100);
+            }
+            saveHistory();
+            renderHistory();
+        }
+
+        function toggleEditHistory() {
+            editingHistory = !editingHistory;
+            renderHistory();
+        }
+
+        function clearHistory() {
+            if (confirm('Clear all history?')) {
+                history = [];
+                editingHistory = false;
+                saveHistory();
+                renderHistory();
+            }
+        }
+
+        function deleteHistoryEntry(index) {
+            if (confirm('Delete this entry?')) {
+                history.splice(index, 1);
+                saveHistory();
+                renderHistory();
+            }
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('history-section');
+
+            if (history.length === 0) {
+                container.innerHTML = '';
+                editingHistory = false;
+                return;
+            }
+
+            // Group by date, keeping track of original index
+            const grouped = {};
+            history.forEach((entry, originalIndex) => {
+                const date = new Date(entry.timestamp);
+                const dateKey = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                if (!grouped[dateKey]) {
+                    grouped[dateKey] = [];
+                }
+                grouped[dateKey].push({ ...entry, originalIndex });
+            });
+
+            const editingClass = editingHistory ? 'editing' : '';
+            const editButtonText = editingHistory ? 'Done' : 'Edit';
+
+            let html = `
+                <div class="section-header">
+                    <span class="section-title">History</span>
+                    <div>
+                        ${editingHistory ? '<button class="clear-history" onclick="clearHistory()">Clear All</button> | ' : ''}
+                        <button class="edit-history" onclick="toggleEditHistory()">${editButtonText}</button>
+                    </div>
+                </div>
+            `;
+
+            for (const [date, entries] of Object.entries(grouped)) {
+                html += `<div class="history-card ${editingClass}">`;
+                html += `<div class="history-date">${date}</div>`;
+
+                entries.forEach((entry) => {
+                    const time = new Date(entry.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                    html += `
+                        <div class="history-entry">
+                            <span class="history-name">${entry.name}</span>
+                            <div class="history-right">
+                                <span class="history-time">${time}</span>
+                                <button class="history-delete" onclick="deleteHistoryEntry(${entry.originalIndex})">X</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+            }
+
+            container.innerHTML = html;
         }
 
         function createExerciseHTML(exercise, index) {
@@ -450,6 +758,8 @@
 
             // Set a placeholder so isHolding is true when we render
             holdTimers[index] = true;
+            playChime();
+            requestWakeLock();
             renderExercises();
 
             // Need to wait for DOM to update
@@ -479,8 +789,14 @@
                         exercises[index].currentReps++;
                         saveData();
 
+                        playBell();
                         if (navigator.vibrate) {
                             navigator.vibrate([200, 100, 200]);
+                        }
+
+                        // Release wake lock if no more timers running
+                        if (Object.keys(holdTimers).length === 0 && Object.keys(timers).length === 0) {
+                            releaseWakeLock();
                         }
 
                         renderExercises();
@@ -506,6 +822,9 @@
             // Only start rest timer if there are more sets to do
             if (exercises[index].currentSet <= exercises[index].targetSets) {
                 startRestTimer(index);
+            } else {
+                // Exercise complete - log to history
+                logCompletion(exercises[index].name);
             }
         }
 
@@ -551,6 +870,7 @@
             const displayElement = document.getElementById(`timer-display-${index}`);
 
             timerElement.classList.add('active');
+            requestWakeLock();
 
             timers[index] = setInterval(() => {
                 const minutes = Math.floor(seconds / 60);
@@ -567,6 +887,11 @@
                         navigator.vibrate([200, 100, 200]);
                     }
 
+                    // Release wake lock if no more timers running
+                    if (Object.keys(holdTimers).length === 0 && Object.keys(timers).length === 0) {
+                        releaseWakeLock();
+                    }
+
                     // Show notification
                     alert('Rest time complete!');
                 } else {
@@ -577,6 +902,7 @@
 
         // Initialize the app
         renderExercises();
+        renderHistory();
     </script>
 </body>
 </html>
