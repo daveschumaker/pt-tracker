@@ -1,0 +1,59 @@
+# PT Tracker
+
+A simple, mobile-friendly Progressive Web App (PWA) for tracking physical therapy exercises, reps, sets, and rest periods.
+
+**Live Demo:** [https://dave.ly/tools/pt-tracker/](https://dave.ly/tools/pt-tracker/)
+
+## Features
+
+- **Rep & Set Tracking** - Count reps and sets with configurable targets
+- **Hold Timer** - For exercises requiring timed holds (e.g., planks)
+- **Rest Timer** - 60-second countdown between sets with audio notification
+- **History Log** - Track completed exercises grouped by day
+- **Offline Support** - Works without internet after first visit
+- **Installable** - Add to home screen on iOS/Android for full-screen app experience
+- **Dark Mode** - Automatically matches system theme
+- **Wake Lock** - Prevents screen from sleeping during timers
+
+## Tech Stack
+
+- Vanilla HTML, CSS, JavaScript (no frameworks)
+- Progressive Web App (PWA) with Service Worker
+- Web Audio API for timer sounds
+- Screen Wake Lock API
+- localStorage for data persistence
+
+## Installation
+
+### As a Web App (Recommended)
+
+1. Visit the live demo URL on your mobile device
+2. **iOS:** Tap Share > "Add to Home Screen"
+3. **Android:** Tap menu > "Add to Home Screen" or "Install"
+
+### Self-Hosting
+
+1. Clone this repository
+2. Serve the files from any static web server (requires HTTPS for PWA features)
+3. Update `manifest.json` with your deployment path:
+   - `start_url`: Your app's URL path
+   - `scope`: Your app's URL path
+
+## Files
+
+```
+pt-tracker/
+├── index.html      # Main app (HTML, CSS, JS all-in-one)
+├── manifest.json   # PWA manifest
+├── sw.js           # Service worker for offline support
+├── icon.png        # App icon (512x512)
+└── README.md
+```
+
+## Privacy
+
+All data is stored locally in your browser's localStorage. Nothing is sent to any server. Each device/browser has its own separate data.
+
+## License
+
+MIT
