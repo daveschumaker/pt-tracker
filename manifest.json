@@ -2,7 +2,7 @@
   "name": "PT Tracker - Physical Therapy Rep Counter",
   "short_name": "PT Tracker",
   "description": "Track your physical therapy exercises, reps, sets, and rest periods",
-  "start_url": "/",
+  "start_url": "/tools/pt-tracker/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
@@ -17,6 +17,6 @@
   ],
   "categories": ["health", "medical", "fitness"],
   "lang": "en",
-  "scope": "/",
+  "scope": "/tools/pt-tracker/",
   "prefer_related_applications": false
 }

@@ -6,7 +6,8 @@
     <title>PT Tracker</title>
 
     <!-- PWA Meta Tags -->
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
     <meta name="description" content="Physical Therapy Rep and Set Tracker">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -378,6 +379,137 @@
             border: none;
             cursor: pointer;
         }
+
+        .accordion-toggle {
+            width: 100%;
+            padding: 0.5rem;
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .accordion-toggle::after {
+            content: '▼';
+            font-size: 0.5rem;
+            transition: transform 0.2s;
+        }
+
+        .accordion-toggle.open::after {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            display: none;
+            padding-top: 0.5rem;
+        }
+
+        .accordion-content.open {
+            display: block;
+        }
+
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #111;
+                color: #f5f5f5;
+            }
+
+            .exercise-card,
+            .history-card,
+            .modal-content {
+                background: #1a1a1a;
+                border-color: #333;
+            }
+
+            .exercise-title,
+            .history-date,
+            .history-name,
+            .stat-value,
+            .timer-display,
+            .modal-title {
+                color: #f5f5f5;
+            }
+
+            .stat-label,
+            .timer-label,
+            .form-label,
+            .section-title {
+                color: #999;
+            }
+
+            .btn {
+                background: #1a1a1a;
+                border-color: #333;
+                color: #f5f5f5;
+            }
+
+            .btn:active {
+                background: #252525;
+            }
+
+            .btn-primary {
+                background: #1a1a1a;
+                color: #f5f5f5;
+                border-color: #f5f5f5;
+            }
+
+            .btn-primary:active {
+                background: #252525;
+            }
+
+            .timer {
+                background: #252525;
+                border-color: #333;
+            }
+
+            .add-exercise {
+                background: #1a1a1a;
+                border-color: #444;
+                color: #999;
+            }
+
+            .add-exercise:active {
+                background: #252525;
+            }
+
+            .form-input {
+                background: #252525;
+                border-color: #333;
+                color: #f5f5f5;
+            }
+
+            .form-input:focus {
+                border-color: #f5f5f5;
+            }
+
+            .hold-timer {
+                background: #252525;
+                border-color: #333;
+            }
+
+            .hold-timer-display {
+                color: #f5f5f5;
+            }
+
+            .hold-timer-label {
+                color: #999;
+            }
+
+            .history-entry {
+                border-bottom-color: #333;
+            }
+
+            .history-count {
+                background: #052e16;
+            }
+        }
     </style>
 </head>
 <body>
@@ -401,7 +533,7 @@
 
     <div id="modal" class="modal">
         <div class="modal-content">
-            <div class="modal-title">Add Exercise</div>
+            <div class="modal-title" id="modal-title">Add Exercise</div>
             <div class="form-group">
                 <label class="form-label">Exercise Name</label>
                 <input type="text" id="exercise-name" class="form-input" placeholder="e.g. Squats">
@@ -421,7 +553,7 @@
                 <input type="number" id="hold-time" class="form-input" value="0" min="0">
             </div>
             <div class="controls" style="margin-bottom: 0;">
-                <button class="btn btn-primary" onclick="addExercise()">Add</button>
+                <button class="btn btn-primary" id="modal-submit" onclick="saveExercise()">Add</button>
                 <button class="btn" onclick="hideModal()">Cancel</button>
             </div>
         </div>
@@ -438,7 +570,7 @@
 
         // Register service worker for offline support
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
+            navigator.serviceWorker.register('./sw.js')
                 .then((registration) => {
                     console.log('Service Worker registered:', registration.scope);
                 })
@@ -676,26 +808,47 @@
                     <button class="btn btn-primary" onclick="resetExercise(${index})" style="width: 100%;">
                         Start Again
                     </button>
-                    ` : `
-                    <div class="controls">
-                        <button class="btn btn-primary" onclick="addRep(${index})"${repButtonDisabled ? ' disabled' : ''}>${repButtonText}</button>
-                        <button class="btn" onclick="subtractRep(${index})"${isHolding ? ' disabled' : ''}>-1 Rep</button>
-                    </div>
 
-                    <div class="controls">
-                        <button class="btn btn-primary" onclick="completeSet(${index})"${setsComplete || isHolding ? ' disabled' : ''}>Complete Set</button>
-                        <button class="btn" onclick="resetExercise(${index})">Reset</button>
+                    <button class="accordion-toggle" onclick="toggleAccordion(${index})" id="accordion-toggle-${index}">
+                        More Options
+                    </button>
+
+                    <div class="accordion-content" id="accordion-${index}">
+                        <div class="controls">
+                            <button class="btn" onclick="editExercise(${index})">Edit</button>
+                            <button class="btn" onclick="removeExercise(${index})" style="color: #999;">Remove</button>
+                        </div>
                     </div>
+                    ` : `
+                    <button class="btn btn-primary" onclick="addRep(${index})" style="width: 100%;"${repButtonDisabled ? ' disabled' : ''}>${repButtonText}</button>
+
+                    ${repsComplete && !isHolding ? `
+                    <button class="btn btn-primary" onclick="completeSet(${index})" style="width: 100%; margin-top: 0.5rem;">
+                        Complete Set
+                    </button>
+                    ` : ''}
 
                     <div id="timer-${index}" class="timer">
                         <div class="timer-display" id="timer-display-${index}">0:00</div>
                         <div class="timer-label">Rest</div>
                     </div>
-                    `}
 
-                    <button class="btn" onclick="removeExercise(${index})" style="margin-top: 0.5rem; width: 100%; color: #999;">
-                        Remove
+                    <button class="accordion-toggle" onclick="toggleAccordion(${index})" id="accordion-toggle-${index}">
+                        More Options
                     </button>
+
+                    <div class="accordion-content" id="accordion-${index}">
+                        <div class="controls">
+                            <button class="btn" onclick="subtractRep(${index})"${isHolding ? ' disabled' : ''}>-1 Rep</button>
+                            <button class="btn btn-primary" onclick="completeSet(${index})"${setsComplete || isHolding ? ' disabled' : ''}>Complete Set</button>
+                        </div>
+
+                        <div class="controls">
+                            <button class="btn" onclick="editExercise(${index})">Edit</button>
+                            <button class="btn" onclick="removeExercise(${index})" style="color: #999;">Remove</button>
+                        </div>
+                    </div>
+                    `}
                 </div>
             `;
         }
@@ -705,34 +858,77 @@
             container.innerHTML = exercises.map((exercise, index) => createExerciseHTML(exercise, index)).join('');
         }
 
-        function showModal() {
-            document.getElementById('modal').classList.add('active');
-            document.getElementById('exercise-name').value = '';
-            document.getElementById('target-reps').value = '10';
-            document.getElementById('target-sets').value = '3';
-            document.getElementById('hold-time').value = '0';
+        function toggleAccordion(index) {
+            const content = document.getElementById(`accordion-${index}`);
+            const toggle = document.getElementById(`accordion-toggle-${index}`);
+            content.classList.toggle('open');
+            toggle.classList.toggle('open');
+        }
+
+        let editingIndex = null;
+
+        function showModal(index = null) {
+            editingIndex = index;
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const submitBtn = document.getElementById('modal-submit');
+
+            if (index !== null) {
+                // Edit mode
+                const exercise = exercises[index];
+                modalTitle.textContent = 'Edit Exercise';
+                submitBtn.textContent = 'Save';
+                document.getElementById('exercise-name').value = exercise.name;
+                document.getElementById('target-reps').value = exercise.targetReps;
+                document.getElementById('target-sets').value = exercise.targetSets;
+                document.getElementById('hold-time').value = exercise.holdTime;
+            } else {
+                // Add mode
+                modalTitle.textContent = 'Add Exercise';
+                submitBtn.textContent = 'Add';
+                document.getElementById('exercise-name').value = '';
+                document.getElementById('target-reps').value = '10';
+                document.getElementById('target-sets').value = '3';
+                document.getElementById('hold-time').value = '0';
+            }
+
+            modal.classList.add('active');
             document.getElementById('exercise-name').focus();
         }
 
         function hideModal() {
             document.getElementById('modal').classList.remove('active');
+            editingIndex = null;
         }
 
-        function addExercise() {
+        function editExercise(index) {
+            showModal(index);
+        }
+
+        function saveExercise() {
             const name = document.getElementById('exercise-name').value.trim();
             const targetReps = parseInt(document.getElementById('target-reps').value) || 10;
             const targetSets = parseInt(document.getElementById('target-sets').value) || 3;
             const holdTime = parseInt(document.getElementById('hold-time').value) || 0;
 
             if (name) {
-                exercises.push({
-                    name: name,
-                    targetReps: targetReps,
-                    targetSets: targetSets,
-                    holdTime: holdTime,
-                    currentSet: 1,
-                    currentReps: 0
-                });
+                if (editingIndex !== null) {
+                    // Update existing exercise
+                    exercises[editingIndex].name = name;
+                    exercises[editingIndex].targetReps = targetReps;
+                    exercises[editingIndex].targetSets = targetSets;
+                    exercises[editingIndex].holdTime = holdTime;
+                } else {
+                    // Add new exercise
+                    exercises.push({
+                        name: name,
+                        targetReps: targetReps,
+                        targetSets: targetSets,
+                        holdTime: holdTime,
+                        currentSet: 1,
+                        currentReps: 0
+                    });
+                }
                 saveData();
                 renderExercises();
                 hideModal();
@@ -882,6 +1078,9 @@
                     delete timers[index];
                     timerElement.classList.remove('active');
 
+                    // Play bell sound
+                    playBell();
+
                     // Vibrate if supported
                     if (navigator.vibrate) {
                         navigator.vibrate([200, 100, 200]);
@@ -891,9 +1090,6 @@
                     if (Object.keys(holdTimers).length === 0 && Object.keys(timers).length === 0) {
                         releaseWakeLock();
                     }
-
-                    // Show notification
-                    alert('Rest time complete!');
                 } else {
                     seconds--;
                 }
