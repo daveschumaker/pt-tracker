@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PT Tracker</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="Physical Therapy Rep and Set Tracker">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="PT Tracker">
+
+    <!-- App Icons -->
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="manifest" href="manifest.json">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 1rem;
+            color: #111;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            padding: 1.5rem 0;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        .content {
+            padding: 0;
+        }
+
+        .exercise-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e5e5e5;
+        }
+
+        .exercise-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #111;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 0.75rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: #111;
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.875rem;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: white;
+            color: #111;
+        }
+
+        .btn:active {
+            background: #f5f5f5;
+        }
+
+        .btn-primary {
+            background: #111;
+            color: white;
+            border-color: #111;
+        }
+
+        .btn-primary:active {
+            background: #333;
+        }
+
+        .timer {
+            background: #fafafa;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .timer.active {
+            display: block;
+        }
+
+        .timer-display {
+            font-size: 2rem;
+            font-weight: 300;
+            color: #111;
+            margin-bottom: 0.25rem;
+        }
+
+        .timer-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .add-exercise {
+            width: 100%;
+            padding: 1rem;
+            background: white;
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            color: #666;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .add-exercise:active {
+            background: #f5f5f5;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 100;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .modal-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #111;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .exercise-complete {
+            border-color: #22c55e;
+        }
+
+        .stat-value.done {
+            color: #22c55e;
+        }
+
+        .hold-timer {
+            background: #111;
+            border: 1px solid #111;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .hold-timer-display {
+            font-size: 3rem;
+            font-weight: 300;
+            color: white;
+            margin-bottom: 0.25rem;
+        }
+
+        .hold-timer-label {
+            font-size: 0.75rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>PT Tracker</h1>
+        </div>
+
+        <div class="content">
+            <div id="exercises-container">
+                <!-- Exercises will be added here -->
+            </div>
+
+            <button class="add-exercise" onclick="showModal()">
+                + Add Exercise
+            </button>
+        </div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">Add Exercise</div>
+            <div class="form-group">
+                <label class="form-label">Exercise Name</label>
+                <input type="text" id="exercise-name" class="form-input" placeholder="e.g. Squats">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Target Reps</label>
+                    <input type="number" id="target-reps" class="form-input" value="10" min="1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Target Sets</label>
+                    <input type="number" id="target-sets" class="form-input" value="3" min="1">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Hold Time (seconds, 0 = none)</label>
+                <input type="number" id="hold-time" class="form-input" value="0" min="0">
+            </div>
+            <div class="controls" style="margin-bottom: 0;">
+                <button class="btn btn-primary" onclick="addExercise()">Add</button>
+                <button class="btn" onclick="hideModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let exercises = JSON.parse(localStorage.getItem('ptExercises') || '[]');
+        let timers = {};
+        let holdTimers = {};
+
+        function saveData() {
+            localStorage.setItem('ptExercises', JSON.stringify(exercises));
+        }
+
+        function createExerciseHTML(exercise, index) {
+            const setsComplete = exercise.currentSet > exercise.targetSets;
+            const repsComplete = exercise.currentReps >= exercise.targetReps;
+            const cardClass = setsComplete ? 'exercise-card exercise-complete' : 'exercise-card';
+            const hasHold = exercise.holdTime > 0;
+            const isHolding = holdTimers[index] !== undefined;
+
+            let holdTimerHTML = '';
+            if (hasHold && isHolding) {
+                holdTimerHTML = `
+                    <div class="hold-timer">
+                        <div class="hold-timer-display" id="hold-display-${index}">0:00</div>
+                        <div class="hold-timer-label">Hold</div>
+                    </div>
+                `;
+            }
+
+            const repButtonText = hasHold ? 'Start Hold' : '+1 Rep';
+            const repButtonDisabled = setsComplete || isHolding;
+
+            return `
+                <div class="${cardClass}">
+                    <div class="exercise-title">${exercise.name}${hasHold ? ' (' + exercise.holdTime + 's hold)' : ''}</div>
+
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-label">Set</div>
+                            <div class="stat-value${setsComplete ? ' done' : ''}">${setsComplete ? exercise.targetSets : exercise.currentSet} / ${exercise.targetSets}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Reps</div>
+                            <div class="stat-value${repsComplete ? ' done' : ''}">${exercise.currentReps} / ${exercise.targetReps}</div>
+                        </div>
+                    </div>
+
+                    ${holdTimerHTML}
+
+                    ${setsComplete ? `
+                    <button class="btn btn-primary" onclick="resetExercise(${index})" style="width: 100%;">
+                        Start Again
+                    </button>
+                    ` : `
+                    <div class="controls">
+                        <button class="btn btn-primary" onclick="addRep(${index})"${repButtonDisabled ? ' disabled' : ''}>${repButtonText}</button>
+                        <button class="btn" onclick="subtractRep(${index})"${isHolding ? ' disabled' : ''}>-1 Rep</button>
+                    </div>
+
+                    <div class="controls">
+                        <button class="btn btn-primary" onclick="completeSet(${index})"${setsComplete || isHolding ? ' disabled' : ''}>Complete Set</button>
+                        <button class="btn" onclick="resetExercise(${index})">Reset</button>
+                    </div>
+
+                    <div id="timer-${index}" class="timer">
+                        <div class="timer-display" id="timer-display-${index}">0:00</div>
+                        <div class="timer-label">Rest</div>
+                    </div>
+                    `}
+
+                    <button class="btn" onclick="removeExercise(${index})" style="margin-top: 0.5rem; width: 100%; color: #999;">
+                        Remove
+                    </button>
+                </div>
+            `;
+        }
+
+        function renderExercises() {
+            const container = document.getElementById('exercises-container');
+            container.innerHTML = exercises.map((exercise, index) => createExerciseHTML(exercise, index)).join('');
+        }
+
+        function showModal() {
+            document.getElementById('modal').classList.add('active');
+            document.getElementById('exercise-name').value = '';
+            document.getElementById('target-reps').value = '10';
+            document.getElementById('target-sets').value = '3';
+            document.getElementById('hold-time').value = '0';
+            document.getElementById('exercise-name').focus();
+        }
+
+        function hideModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function addExercise() {
+            const name = document.getElementById('exercise-name').value.trim();
+            const targetReps = parseInt(document.getElementById('target-reps').value) || 10;
+            const targetSets = parseInt(document.getElementById('target-sets').value) || 3;
+            const holdTime = parseInt(document.getElementById('hold-time').value) || 0;
+
+            if (name) {
+                exercises.push({
+                    name: name,
+                    targetReps: targetReps,
+                    targetSets: targetSets,
+                    holdTime: holdTime,
+                    currentSet: 1,
+                    currentReps: 0
+                });
+                saveData();
+                renderExercises();
+                hideModal();
+            }
+        }
+
+        function addRep(index) {
+            const exercise = exercises[index];
+
+            if (exercise.holdTime > 0) {
+                startHoldTimer(index);
+            } else {
+                exercise.currentReps++;
+                saveData();
+                renderExercises();
+            }
+        }
+
+        function startHoldTimer(index) {
+            if (holdTimers[index]) return;
+
+            let seconds = exercises[index].holdTime;
+
+            // Set a placeholder so isHolding is true when we render
+            holdTimers[index] = true;
+            renderExercises();
+
+            // Need to wait for DOM to update
+            setTimeout(() => {
+                const displayElement = document.getElementById(`hold-display-${index}`);
+                if (!displayElement) {
+                    delete holdTimers[index];
+                    return;
+                }
+
+                const updateDisplay = () => {
+                    const minutes = Math.floor(seconds / 60);
+                    const remainingSeconds = seconds % 60;
+                    displayElement.textContent = `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+                };
+
+                updateDisplay();
+
+                holdTimers[index] = setInterval(() => {
+                    seconds--;
+                    updateDisplay();
+
+                    if (seconds <= 0) {
+                        clearInterval(holdTimers[index]);
+                        delete holdTimers[index];
+
+                        exercises[index].currentReps++;
+                        saveData();
+
+                        if (navigator.vibrate) {
+                            navigator.vibrate([200, 100, 200]);
+                        }
+
+                        renderExercises();
+                    }
+                }, 1000);
+            }, 10);
+        }
+
+        function subtractRep(index) {
+            if (exercises[index].currentReps > 0) {
+                exercises[index].currentReps--;
+                saveData();
+                renderExercises();
+            }
+        }
+
+        function completeSet(index) {
+            exercises[index].currentSet++;
+            exercises[index].currentReps = 0;
+            saveData();
+            renderExercises();
+
+            // Only start rest timer if there are more sets to do
+            if (exercises[index].currentSet <= exercises[index].targetSets) {
+                startRestTimer(index);
+            }
+        }
+
+        function resetExercise(index) {
+            exercises[index].currentSet = 1;
+            exercises[index].currentReps = 0;
+            if (timers[index]) {
+                clearInterval(timers[index]);
+                delete timers[index];
+            }
+            if (holdTimers[index]) {
+                clearInterval(holdTimers[index]);
+                delete holdTimers[index];
+            }
+            saveData();
+            renderExercises();
+        }
+
+        function removeExercise(index) {
+            if (confirm('Remove this exercise?')) {
+                if (timers[index]) {
+                    clearInterval(timers[index]);
+                    delete timers[index];
+                }
+                if (holdTimers[index]) {
+                    clearInterval(holdTimers[index]);
+                    delete holdTimers[index];
+                }
+                exercises.splice(index, 1);
+                saveData();
+                renderExercises();
+            }
+        }
+
+        function startRestTimer(index) {
+            // Clear any existing timer
+            if (timers[index]) {
+                clearInterval(timers[index]);
+            }
+
+            let seconds = 60; // 60 second rest timer
+            const timerElement = document.getElementById(`timer-${index}`);
+            const displayElement = document.getElementById(`timer-display-${index}`);
+
+            timerElement.classList.add('active');
+
+            timers[index] = setInterval(() => {
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                displayElement.textContent = `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+
+                if (seconds <= 0) {
+                    clearInterval(timers[index]);
+                    delete timers[index];
+                    timerElement.classList.remove('active');
+
+                    // Vibrate if supported
+                    if (navigator.vibrate) {
+                        navigator.vibrate([200, 100, 200]);
+                    }
+
+                    // Show notification
+                    alert('Rest time complete!');
+                } else {
+                    seconds--;
+                }
+            }, 1000);
+        }
+
+        // Initialize the app
+        renderExercises();
+    </script>
+</body>
+</html>
