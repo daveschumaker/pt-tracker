@@ -132,6 +132,16 @@
             background: #333;
         }
 
+        .btn-success {
+            background: #22c55e;
+            color: white;
+            border-color: #22c55e;
+        }
+
+        .btn-success:active {
+            background: #16a34a;
+        }
+
         .timer {
             background: #fafafa;
             border: 1px solid #e5e5e5;
@@ -462,6 +472,15 @@
 
             .btn-primary:active {
                 background: #252525;
+            }
+
+            .btn-success {
+                background: #16a34a;
+                border-color: #16a34a;
+            }
+
+            .btn-success:active {
+                background: #15803d;
             }
 
             .timer {
@@ -823,7 +842,7 @@
                     <button class="btn btn-primary" onclick="addRep(${index})" style="width: 100%;"${repButtonDisabled ? ' disabled' : ''}>${repButtonText}</button>
 
                     ${repsComplete && !isHolding ? `
-                    <button class="btn btn-primary" onclick="completeSet(${index})" style="width: 100%; margin-top: 0.5rem;">
+                    <button class="btn btn-success" onclick="completeSet(${index})" style="width: 100%; margin-top: 0.5rem;">
                         Complete Set
                     </button>
                     ` : ''}
@@ -840,10 +859,11 @@
                     <div class="accordion-content" id="accordion-${index}">
                         <div class="controls">
                             <button class="btn" onclick="subtractRep(${index})"${isHolding ? ' disabled' : ''}>-1 Rep</button>
-                            <button class="btn btn-primary" onclick="completeSet(${index})"${setsComplete || isHolding ? ' disabled' : ''}>Complete Set</button>
+                            <button class="btn btn-success" onclick="completeSet(${index})"${setsComplete || isHolding ? ' disabled' : ''}>Complete Set</button>
                         </div>
 
                         <div class="controls">
+                            <button class="btn" onclick="resetExercise(${index})">Reset</button>
                             <button class="btn" onclick="editExercise(${index})">Edit</button>
                             <button class="btn" onclick="removeExercise(${index})" style="color: #999;">Remove</button>
                         </div>
