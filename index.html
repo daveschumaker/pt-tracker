@@ -66,11 +66,32 @@
             border: 1px solid #e5e5e5;
         }
 
+        .exercise-card.exercise-active {
+            border-color: #22c55e;
+        }
+
+        .exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
         .exercise-title {
             font-size: 1rem;
             font-weight: 600;
-            margin-bottom: 1rem;
             color: #111;
+        }
+
+        .badge-active {
+            font-size: 0.625rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: #22c55e;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
         }
 
         .stats {
@@ -438,6 +459,10 @@
                 border-color: #333;
             }
 
+            .exercise-card.exercise-active {
+                border-color: #22c55e;
+            }
+
             .exercise-title,
             .history-date,
             .history-name,
@@ -789,9 +814,16 @@
         function createExerciseHTML(exercise, index) {
             const setsComplete = exercise.currentSet > exercise.targetSets;
             const repsComplete = exercise.currentReps >= exercise.targetReps;
-            const cardClass = setsComplete ? 'exercise-card exercise-complete' : 'exercise-card';
+            const isActive = !setsComplete && (exercise.currentReps > 0 || exercise.currentSet > 1);
             const hasHold = exercise.holdTime > 0;
             const isHolding = holdTimers[index] !== undefined;
+
+            let cardClass = 'exercise-card';
+            if (setsComplete) {
+                cardClass += ' exercise-complete';
+            } else if (isActive) {
+                cardClass += ' exercise-active';
+            }
 
             let holdTimerHTML = '';
             if (hasHold && isHolding) {
@@ -808,7 +840,10 @@
 
             return `
                 <div class="${cardClass}">
-                    <div class="exercise-title">${exercise.name}${hasHold ? ' (' + exercise.holdTime + 's hold)' : ''}</div>
+                    <div class="exercise-header">
+                        <div class="exercise-title">${exercise.name}${hasHold ? ' (' + exercise.holdTime + 's hold)' : ''}</div>
+                        ${isActive ? '<span class="badge-active">Active</span>' : ''}
+                    </div>
 
                     <div class="stats">
                         <div class="stat">
