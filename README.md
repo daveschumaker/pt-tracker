@@ -43,10 +43,11 @@ A simple, mobile-friendly Progressive Web App (PWA) for tracking physical therap
 
 ```
 pt-tracker/
-├── index.html      # Main app (HTML, CSS, JS all-in-one)
-├── manifest.json   # PWA manifest
-├── sw.js           # Service worker for offline support
-├── icon.png        # App icon (512x512)
+├── src/
+│   ├── index.html      # Main app (HTML, CSS, JS all-in-one)
+│   ├── manifest.json   # PWA manifest
+│   ├── sw.js           # Service worker for offline support
+│   └── icon.png        # App icon (512x512)
 └── README.md
 ```
 

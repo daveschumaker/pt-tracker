@@ -14,9 +14,9 @@
     <meta name="apple-mobile-web-app-title" content="PT Tracker">
 
     <!-- App Icons -->
-    <link rel="apple-touch-icon" href="icon.png">
-    <link rel="icon" type="image/png" href="icon.png">
-    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="src/icon.png">
+    <link rel="icon" type="image/png" href="src/icon.png">
+    <link rel="manifest" href="src/manifest.json">
 
     <style>
         * {
@@ -614,7 +614,7 @@
 
         // Register service worker for offline support
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js')
+            navigator.serviceWorker.register('src/sw.js')
                 .then((registration) => {
                     console.log('Service Worker registered:', registration.scope);
                 })
