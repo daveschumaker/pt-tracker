@@ -4,6 +4,7 @@
   "description": "A simple, mobile-friendly Progressive Web App (PWA) for tracking physical therapy exercises, reps, sets, and rest periods.",
   "main": "index.js",
   "scripts": {
+    "dev": "http-server src -p 3000 -c-1 -o",
     "test": "vitest",
     "test:ui": "vitest --ui"
   },
@@ -20,6 +21,7 @@
   },
   "homepage": "https://github.com/daveschumaker/pt-tracker#readme",
   "devDependencies": {
+    "http-server": "^14.1.1",
     "vitest": "^4.0.17"
   }
 }

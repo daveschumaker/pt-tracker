@@ -42,10 +42,18 @@ A simple, mobile-friendly Progressive Web App (PWA) for tracking physical therap
 
 ## Development
 
-### Running Tests
+### Running Development Server
 
 ```bash
 npm install
+npm run dev
+```
+
+This will start a local server at `http://localhost:3000` and automatically open your browser.
+
+### Running Tests
+
+```bash
 npm test
 ```
 
