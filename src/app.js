@@ -125,31 +125,49 @@ window.saveExercise = function() {
   const targetSets = parseInt(document.getElementById('target-sets').value) || DEFAULT_VALUES.TARGET_SETS;
   const holdTime = parseInt(document.getElementById('hold-time').value) || DEFAULT_VALUES.HOLD_TIME;
 
-  if (name) {
-    const editingIndex = State.getEditingIndex();
-
-    if (editingIndex !== null) {
-      State.updateExercise(editingIndex, {
-        name,
-        targetReps,
-        targetSets,
-        holdTime
-      });
-    } else {
-      State.addExercise({
-        name,
-        targetReps,
-        targetSets,
-        holdTime,
-        currentSet: 1,
-        currentReps: 0
-      });
-    }
-
-    UI.renderExercises();
-    UI.hideModal();
-    State.setEditingIndex(null);
+  if (!name) {
+    alert('Please enter an exercise name');
+    return;
   }
+
+  if (targetReps < 1) {
+    alert('Target reps must be at least 1');
+    return;
+  }
+
+  if (targetSets < 1) {
+    alert('Target sets must be at least 1');
+    return;
+  }
+
+  if (holdTime < 0) {
+    alert('Hold time cannot be negative');
+    return;
+  }
+
+  const editingIndex = State.getEditingIndex();
+
+  if (editingIndex !== null) {
+    State.updateExercise(editingIndex, {
+      name,
+      targetReps,
+      targetSets,
+      holdTime
+    });
+  } else {
+    State.addExercise({
+      name,
+      targetReps,
+      targetSets,
+      holdTime,
+      currentSet: 1,
+      currentReps: 0
+    });
+  }
+
+  UI.renderExercises();
+  UI.hideModal();
+  State.setEditingIndex(null);
 };
 
 window.toggleEditHistory = function() {

@@ -132,6 +132,7 @@ function isHolding(index) {
 }
 
 export {
+  formatTime,
   startHoldTimer,
   startRestTimer,
   clearTimer,
