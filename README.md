@@ -39,15 +39,34 @@ A simple, mobile-friendly Progressive Web App (PWA) for tracking physical therap
    - `start_url`: Your app's URL path
    - `scope`: Your app's URL path
 
+## Development
+
+### Running Tests
+
+```bash
+npm install
+npm test
+```
+
+Run tests with the Vitest UI:
+```bash
+npm run test:ui
+```
+
 ## Files
 
 ```
 pt-tracker/
 ├── src/
-│   ├── index.html      # Main app (HTML, CSS, JS all-in-one)
+│   ├── index.html      # Main app HTML
+│   ├── app.js          # Application logic
 │   ├── manifest.json   # PWA manifest
 │   ├── sw.js           # Service worker for offline support
 │   └── icon.png        # App icon (512x512)
+├── tests/
+│   └── example.test.js # Example tests
+├── vitest.config.js    # Vitest configuration
+├── package.json        # NPM dependencies
 └── README.md
 ```
 

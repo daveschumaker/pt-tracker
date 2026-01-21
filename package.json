@@ -1,0 +1,25 @@
+{
+  "name": "pt-tracker",
+  "version": "1.0.0",
+  "description": "A simple, mobile-friendly Progressive Web App (PWA) for tracking physical therapy exercises, reps, sets, and rest periods.",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest",
+    "test:ui": "vitest --ui"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daveschumaker/pt-tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/daveschumaker/pt-tracker/issues"
+  },
+  "homepage": "https://github.com/daveschumaker/pt-tracker#readme",
+  "devDependencies": {
+    "vitest": "^4.0.17"
+  }
+}
