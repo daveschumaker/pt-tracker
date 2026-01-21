@@ -22,6 +22,7 @@ A simple, mobile-friendly Progressive Web App (PWA) for tracking physical therap
 - Web Audio API for timer sounds
 - Screen Wake Lock API
 - localStorage for data persistence
+- Vitest for testing
 
 ## Installation
 
