@@ -1,0 +1,537 @@
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 1rem;
+            padding-top: calc(1rem + env(safe-area-inset-top));
+            padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+            padding-left: calc(1rem + env(safe-area-inset-left));
+            padding-right: calc(1rem + env(safe-area-inset-right));
+            color: #111;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            padding: 1.5rem 0;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        .content {
+            padding: 0;
+        }
+
+        .exercise-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e5e5e5;
+        }
+
+        .exercise-card.exercise-active {
+            border-color: #22c55e;
+        }
+
+        .exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .exercise-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #111;
+        }
+
+        .badge-active {
+            font-size: 0.625rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: #22c55e;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 0.75rem;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: #111;
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.875rem;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: white;
+            color: #111;
+        }
+
+        .btn:active {
+            background: #f5f5f5;
+        }
+
+        .btn-primary {
+            background: #111;
+            color: white;
+            border-color: #111;
+        }
+
+        .btn-primary:active {
+            background: #333;
+        }
+
+        .btn-success {
+            background: #22c55e;
+            color: white;
+            border-color: #22c55e;
+        }
+
+        .btn-success:active {
+            background: #16a34a;
+        }
+
+        .timer {
+            background: #fafafa;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .timer.active {
+            display: block;
+        }
+
+        .timer-display {
+            font-size: 2rem;
+            font-weight: 300;
+            color: #111;
+            margin-bottom: 0.25rem;
+        }
+
+        .timer-label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .add-exercise {
+            width: 100%;
+            padding: 1rem;
+            background: white;
+            border: 1px dashed #ccc;
+            border-radius: 8px;
+            color: #666;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .add-exercise:active {
+            background: #f5f5f5;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            z-index: 100;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .modal-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #111;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .exercise-complete {
+            border-color: #22c55e;
+        }
+
+        .stat-value.done {
+            color: #22c55e;
+        }
+
+        .hold-timer {
+            background: #111;
+            border: 1px solid #111;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .hold-timer-display {
+            font-size: 3rem;
+            font-weight: 300;
+            color: white;
+            margin-bottom: 0.25rem;
+        }
+
+        .hold-timer-label {
+            font-size: 0.75rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 2rem 0 1rem;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .history-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e5e5e5;
+        }
+
+        .history-date {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #111;
+        }
+
+        .history-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .history-entry:last-child {
+            border-bottom: none;
+        }
+
+        .history-name {
+            font-size: 0.875rem;
+            color: #111;
+        }
+
+        .history-time {
+            font-size: 0.75rem;
+            color: #999;
+        }
+
+        .history-count {
+            font-size: 0.75rem;
+            color: #22c55e;
+            background: #f0fdf4;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .clear-history {
+            font-size: 0.75rem;
+            color: #999;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .history-delete {
+            font-size: 0.75rem;
+            color: #ef4444;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.25rem;
+            margin-left: 0.5rem;
+            display: none;
+        }
+
+        .history-delete:active {
+            color: #dc2626;
+        }
+
+        .editing .history-delete {
+            display: inline;
+        }
+
+        .editing .clear-history {
+            color: #ef4444;
+        }
+
+        .history-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .edit-history {
+            font-size: 0.75rem;
+            color: #999;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .accordion-toggle {
+            width: 100%;
+            padding: 0.5rem;
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .accordion-toggle::after {
+            content: '▼';
+            font-size: 0.5rem;
+            transition: transform 0.2s;
+        }
+
+        .accordion-toggle.open::after {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            display: none;
+            padding-top: 0.5rem;
+        }
+
+        .accordion-content.open {
+            display: block;
+        }
+
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #111;
+                color: #f5f5f5;
+            }
+
+            .exercise-card,
+            .history-card,
+            .modal-content {
+                background: #1a1a1a;
+                border-color: #333;
+            }
+
+            .exercise-card.exercise-active {
+                border-color: #22c55e;
+            }
+
+            .exercise-title,
+            .history-date,
+            .history-name,
+            .stat-value,
+            .timer-display,
+            .modal-title {
+                color: #f5f5f5;
+            }
+
+            .stat-label,
+            .timer-label,
+            .form-label,
+            .section-title {
+                color: #999;
+            }
+
+            .btn {
+                background: #1a1a1a;
+                border-color: #333;
+                color: #f5f5f5;
+            }
+
+            .btn:active {
+                background: #252525;
+            }
+
+            .btn-primary {
+                background: #1a1a1a;
+                color: #f5f5f5;
+                border-color: #f5f5f5;
+            }
+
+            .btn-primary:active {
+                background: #252525;
+            }
+
+            .btn-success {
+                background: #16a34a;
+                border-color: #16a34a;
+            }
+
+            .btn-success:active {
+                background: #15803d;
+            }
+
+            .timer {
+                background: #252525;
+                border-color: #333;
+            }
+
+            .add-exercise {
+                background: #1a1a1a;
+                border-color: #444;
+                color: #999;
+            }
+
+            .add-exercise:active {
+                background: #252525;
+            }
+
+            .form-input {
+                background: #252525;
+                border-color: #333;
+                color: #f5f5f5;
+            }
+
+            .form-input:focus {
+                border-color: #f5f5f5;
+            }
+
+            .hold-timer {
+                background: #252525;
+                border-color: #333;
+            }
+
+            .hold-timer-display {
+                color: #f5f5f5;
+            }
+
+            .hold-timer-label {
+                color: #999;
+            }
+
+            .history-entry {
+                border-bottom-color: #333;
+            }
+
+            .history-count {
+                background: #052e16;
+            }
+        }
+    </style>
