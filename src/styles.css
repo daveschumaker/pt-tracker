@@ -267,6 +267,11 @@
             padding: 1.5rem;
             text-align: center;
             margin-bottom: 0.5rem;
+            display: none;
+        }
+
+        .hold-timer.active {
+            display: block;
         }
 
         .hold-timer-display {
@@ -516,6 +521,10 @@
             .hold-timer {
                 background: #252525;
                 border-color: #333;
+            }
+
+            .hold-timer.active {
+                display: block;
             }
 
             .hold-timer-display {

@@ -23,9 +23,9 @@ function createExerciseHTML(exercise, index) {
   }
 
   let holdTimerHTML = '';
-  if (hasHold && holding) {
+  if (hasHold) {
     holdTimerHTML = `
-      <div class="hold-timer">
+      <div class="hold-timer${holding ? ' active' : ''}">
         <div class="hold-timer-display" id="hold-display-${index}">0:00</div>
         <div class="hold-timer-label">Hold</div>
       </div>

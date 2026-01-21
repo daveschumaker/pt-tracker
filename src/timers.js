@@ -24,6 +24,8 @@ function formatTime(seconds) {
 function startHoldTimer(index, holdTime, onComplete) {
   if (holdTimers[index]) return;
 
+  console.log('startHoldTimer called', { index, holdTime, displayElementId: `hold-display-${index}` });
+
   let seconds = holdTime;
   holdTimers[index] = true;
   playChime();
