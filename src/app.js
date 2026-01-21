@@ -54,6 +54,7 @@ window.addRep = function(index) {
   const exercise = State.getExercise(index);
 
   if (exercise.holdTime > 0) {
+    UI.renderExercises();
     Timers.startHoldTimer(index, exercise.holdTime, () => {
       State.updateExercise(index, { currentReps: exercise.currentReps + 1 });
       UI.renderExercises();
