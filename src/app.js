@@ -3,6 +3,7 @@ import * as Timers from './timers.js';
 import * as State from './state.js';
 import * as UI from './ui.js';
 import { DEFAULT_VALUES } from './constants.js';
+import { validateExercise } from './validation.js';
 
 let wakeLock = null;
 
@@ -54,16 +55,18 @@ window.addRep = function(index) {
   const exercise = State.getExercise(index);
 
   if (exercise.holdTime > 0) {
-    UI.renderExercises();
-    Timers.startHoldTimer(index, exercise.holdTime, () => {
-      State.updateExercise(index, { currentReps: exercise.currentReps + 1 });
-      UI.renderExercises();
-
-      if (!Timers.hasActiveTimers()) {
-        releaseWakeLock();
-      }
-    });
     requestWakeLock();
+    UI.renderExercises();
+    setTimeout(() => {
+      Timers.startHoldTimer(index, exercise.holdTime, () => {
+        State.updateExercise(index, { currentReps: exercise.currentReps + 1 });
+        UI.renderExercises();
+
+        if (!Timers.hasActiveTimers()) {
+          releaseWakeLock();
+        }
+      });
+    }, 0);
   } else {
     State.updateExercise(index, { currentReps: exercise.currentReps + 1 });
     UI.renderExercises();
@@ -100,6 +103,23 @@ window.completeSet = function(index) {
 };
 
 window.resetExercise = function(index) {
+  // Complete any other active exercises first
+  const exercises = State.getExercises();
+  exercises.forEach((exercise, i) => {
+    if (i !== index) {
+      const isActive = exercise.currentSet <= exercise.targetSets &&
+                       (exercise.currentReps > 0 || exercise.currentSet > 1);
+      if (isActive) {
+        State.updateExercise(i, {
+          currentSet: exercise.targetSets + 1,
+          currentReps: 0
+        });
+        Timers.clearTimer(i);
+      }
+    }
+  });
+
+  // Reset the selected exercise
   State.updateExercise(index, {
     currentSet: 1,
     currentReps: 0
@@ -126,23 +146,9 @@ window.saveExercise = function() {
   const targetSets = parseInt(document.getElementById('target-sets').value) || DEFAULT_VALUES.TARGET_SETS;
   const holdTime = parseInt(document.getElementById('hold-time').value) || DEFAULT_VALUES.HOLD_TIME;
 
-  if (!name) {
-    alert('Please enter an exercise name');
-    return;
-  }
-
-  if (targetReps < 1) {
-    alert('Target reps must be at least 1');
-    return;
-  }
-
-  if (targetSets < 1) {
-    alert('Target sets must be at least 1');
-    return;
-  }
-
-  if (holdTime < 0) {
-    alert('Hold time cannot be negative');
+  const validation = validateExercise({ name, targetReps, targetSets, holdTime });
+  if (!validation.valid) {
+    alert(validation.error);
     return;
   }
 

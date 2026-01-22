@@ -24,8 +24,6 @@ function formatTime(seconds) {
 function startHoldTimer(index, holdTime, onComplete) {
   if (holdTimers[index]) return;
 
-  console.log('startHoldTimer called', { index, holdTime, displayElementId: `hold-display-${index}` });
-
   let seconds = holdTime;
   holdTimers[index] = true;
   playChime();
@@ -35,6 +33,12 @@ function startHoldTimer(index, holdTime, onComplete) {
     if (!displayElement) {
       delete holdTimers[index];
       return;
+    }
+
+    // Make the hold timer visible
+    const holdTimerElement = displayElement.parentElement;
+    if (holdTimerElement) {
+      holdTimerElement.classList.add('active');
     }
 
     const updateDisplay = () => {
@@ -133,11 +137,28 @@ function isHolding(index) {
   return holdTimers[index] !== undefined;
 }
 
+/**
+ * Resets all timer state (for testing purposes)
+ */
+function resetAllTimers() {
+  Object.keys(timers).forEach(key => {
+    clearInterval(timers[key]);
+    delete timers[key];
+  });
+  Object.keys(holdTimers).forEach(key => {
+    if (typeof holdTimers[key] === 'number') {
+      clearInterval(holdTimers[key]);
+    }
+    delete holdTimers[key];
+  });
+}
+
 export {
   formatTime,
   startHoldTimer,
   startRestTimer,
   clearTimer,
   hasActiveTimers,
-  isHolding
+  isHolding,
+  resetAllTimers
 };
