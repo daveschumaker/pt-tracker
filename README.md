@@ -83,6 +83,12 @@ pt-tracker/
 
 All data is stored locally in your browser's localStorage. Nothing is sent to any server. Each device/browser has its own separate data.
 
+- No accounts required
+- No cookies
+- No tracking
+- No analytics
+- 100% private
+
 ## License
 
 MIT

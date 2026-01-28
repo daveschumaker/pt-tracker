@@ -543,4 +543,146 @@
                 background: #052e16;
             }
         }
+
+        .footer {
+            margin-top: 2rem;
+            padding: 1.5rem 0;
+            text-align: center;
+        }
+
+        .github-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.15s;
+        }
+
+        .github-link:hover {
+            color: #111;
+        }
+
+        .github-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .github-link {
+                color: #999;
+            }
+
+            .github-link:hover {
+                color: #f5f5f5;
+            }
+        }
+
+        .footer-links {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .footer-link {
+            color: #666;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+
+        .footer-link:hover {
+            color: #111;
+        }
+
+        .footer-divider {
+            color: #ccc;
+            font-size: 0.875rem;
+        }
+
+        .about-content {
+            margin-bottom: 1.5rem;
+        }
+
+        .about-description {
+            font-size: 0.9375rem;
+            line-height: 1.5;
+            color: #444;
+            margin-bottom: 1.25rem;
+        }
+
+        .about-features h4 {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #111;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.75rem;
+        }
+
+        .about-features ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .about-features li {
+            font-size: 0.875rem;
+            color: #555;
+            padding: 0.375rem 0;
+            padding-left: 1.25rem;
+            position: relative;
+        }
+
+        .about-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #22c55e;
+            font-weight: 600;
+        }
+
+        .about-footer {
+            font-size: 0.8125rem;
+            color: #888;
+            font-style: italic;
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .footer-link {
+                color: #999;
+            }
+
+            .footer-link:hover {
+                color: #f5f5f5;
+            }
+
+            .footer-divider {
+                color: #555;
+            }
+
+            .about-description {
+                color: #bbb;
+            }
+
+            .about-features h4 {
+                color: #f5f5f5;
+            }
+
+            .about-features li {
+                color: #aaa;
+            }
+
+            .about-footer {
+                color: #777;
+                border-top-color: #333;
+            }
+        }
     </style>

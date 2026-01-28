@@ -226,6 +226,14 @@ window.toggleAccordion = UI.toggleAccordion;
 window.showModal = UI.showModal;
 window.hideModal = UI.hideModal;
 
+window.showAboutModal = function() {
+  document.getElementById('about-modal').classList.add('active');
+};
+
+window.hideAboutModal = function() {
+  document.getElementById('about-modal').classList.remove('active');
+};
+
 UI.renderExercises();
 UI.renderHistory();
 
