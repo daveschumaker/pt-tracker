@@ -57,8 +57,16 @@ window.addRep = function(index) {
   if (exercise.holdTime > 0) {
     requestWakeLock();
 
-    // Deactivate all other exercises and activate this one
+    // Cancel any existing hold timer on other exercises
     const exercises = State.getExercises();
+    exercises.forEach((ex, i) => {
+      if (i !== index && Timers.isHolding(i)) {
+        console.log(`Cancelling hold timer for exercise ${i}`);
+        Timers.clearTimer(i);
+      }
+    });
+
+    // Deactivate all other exercises and activate this one
     console.log(`Starting hold for exercise ${index}. Total exercises: ${exercises.length}`);
     exercises.forEach((ex, i) => {
       console.log(`Exercise ${i}: active=${ex.active}, name=${ex.name}`);
