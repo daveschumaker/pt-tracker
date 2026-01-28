@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pt-tracker-v1';
+const CACHE_NAME = 'pt-tracker-v2';
 const ASSETS = [
     './',
     './index.html',
@@ -28,15 +28,16 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Fetch event - network-first for HTML, cache-first for assets
+// Fetch event - network-first for HTML and JS, cache-first for other assets
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
     const isHTML = event.request.mode === 'navigate' ||
                    url.pathname.endsWith('.html') ||
                    url.pathname.endsWith('/');
+    const isJS = url.pathname.endsWith('.js');
 
-    if (isHTML) {
-        // Network-first for HTML - always get fresh content when online
+    if (isHTML || isJS) {
+        // Network-first for HTML and JS - always get fresh content when online
         event.respondWith(
             fetch(event.request)
                 .then((networkResponse) => {
@@ -57,7 +58,7 @@ self.addEventListener('fetch', (event) => {
                 })
         );
     } else {
-        // Cache-first for static assets (icons, manifest)
+        // Cache-first for static assets (icons, manifest, css)
         event.respondWith(
             caches.match(event.request)
                 .then((response) => {

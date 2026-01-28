@@ -22,10 +22,12 @@ function formatTime(seconds) {
  * @param {Function} onComplete - Callback when timer completes
  */
 function startHoldTimer(index, holdTime, onComplete) {
+  console.log(`startHoldTimer called for index ${index}, existing timer: ${holdTimers[index]}`);
   if (holdTimers[index]) return;
 
   let seconds = holdTime;
   holdTimers[index] = true;
+  console.log(`Hold timer started for index ${index}, holdTimers:`, holdTimers);
   playChime();
 
   setTimeout(() => {
@@ -134,7 +136,16 @@ function hasActiveTimers() {
  * @returns {boolean} True if hold timer is running for this exercise
  */
 function isHolding(index) {
-  return holdTimers[index] !== undefined;
+  const result = holdTimers[index] !== undefined;
+  return result;
+}
+
+/**
+ * Checks if any exercise has an active hold timer
+ * @returns {boolean} True if any hold timer is running
+ */
+function hasActiveHoldTimer() {
+  return Object.keys(holdTimers).length > 0;
 }
 
 /**
@@ -160,5 +171,6 @@ export {
   clearTimer,
   hasActiveTimers,
   isHolding,
+  hasActiveHoldTimer,
   resetAllTimers
 };

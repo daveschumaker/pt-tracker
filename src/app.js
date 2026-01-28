@@ -56,16 +56,32 @@ window.addRep = function(index) {
 
   if (exercise.holdTime > 0) {
     requestWakeLock();
-    UI.renderExercises();
+
+    // Deactivate all other exercises and activate this one
+    const exercises = State.getExercises();
+    console.log(`Starting hold for exercise ${index}. Total exercises: ${exercises.length}`);
+    exercises.forEach((ex, i) => {
+      console.log(`Exercise ${i}: active=${ex.active}, name=${ex.name}`);
+      if (i !== index) {
+        console.log(`Deactivating exercise ${i}`);
+        State.updateExercise(i, { active: false });
+      }
+    });
+    console.log(`Activating exercise ${index}`);
+    State.updateExercise(index, { active: true });
+
     setTimeout(() => {
       Timers.startHoldTimer(index, exercise.holdTime, () => {
-        State.updateExercise(index, { currentReps: exercise.currentReps + 1 });
+        const currentExercise = State.getExercise(index);
+        // Don't deactivate - keep this exercise active as the most recently completed one
+        State.updateExercise(index, { currentReps: currentExercise.currentReps + 1 });
         UI.renderExercises();
 
         if (!Timers.hasActiveTimers()) {
           releaseWakeLock();
         }
       });
+      UI.renderExercises();
     }, 0);
   } else {
     State.updateExercise(index, { currentReps: exercise.currentReps + 1 });
@@ -168,7 +184,8 @@ window.saveExercise = function() {
       targetSets,
       holdTime,
       currentSet: 1,
-      currentReps: 0
+      currentReps: 0,
+      active: false
     });
   }
 

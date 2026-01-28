@@ -1,4 +1,9 @@
-import { loadExercises, saveExercises, loadHistory, saveHistory } from './storage.js';
+import {
+  loadExercises,
+  saveExercises,
+  loadHistory,
+  saveHistory,
+} from './storage.js';
 import { MAX_HISTORY_ENTRIES } from './constants.js';
 
 let exercises = loadExercises();
@@ -27,6 +32,7 @@ function setExercises(newExercises) {
  * Adds a new exercise to the list
  * @param {Object} exercise - Exercise object to add
  * @param {string} exercise.name - Exercise name
+ * @param {boolean} exercise.active - Exercise is currently active and highlighted
  * @param {number} exercise.targetReps - Target repetitions per set
  * @param {number} exercise.targetSets - Target number of sets
  * @param {number} exercise.holdTime - Hold time in seconds (0 for non-hold exercises)
@@ -91,7 +97,7 @@ function setHistory(newHistory) {
 function addHistoryEntry(name) {
   history.unshift({
     name,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   });
 
   if (history.length > MAX_HISTORY_ENTRIES) {
@@ -164,5 +170,5 @@ export {
   getEditingIndex,
   setEditingIndex,
   getEditingHistory,
-  toggleEditingHistory
+  toggleEditingHistory,
 };

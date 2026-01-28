@@ -11,9 +11,10 @@ import { DEFAULT_VALUES } from './constants.js';
 function createExerciseHTML(exercise, index) {
   const setsComplete = exercise.currentSet > exercise.targetSets;
   const repsComplete = exercise.currentReps >= exercise.targetReps;
-  const isActive = !setsComplete && (exercise.currentReps > 0 || exercise.currentSet > 1);
   const hasHold = exercise.holdTime > 0;
   const holding = isHolding(index);
+  // Use the active field from state, default to false if not set
+  const isActive = exercise.active === true;
 
   let cardClass = 'exercise-card';
   if (setsComplete) {
